@@ -3,11 +3,15 @@ import { apiService } from "./services/api.js";
 
 function Rank({
   searchQuery,
-  searchRank,
   selectedBranch,
-  selectedLocation,
+  selectedUniversity,
   selectedInstitute,
+  selectedCategory,
   searchTrigger,
+  rankMinInput,
+  rankMaxInput,
+  percentileMinInput,
+  percentileMaxInput
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
@@ -36,17 +40,31 @@ function Rank({
         if (selectedBranch && selectedBranch !== "All") {
           params.branch = selectedBranch;
         }
-        if (selectedLocation && selectedLocation !== "All") {
-          params.location = selectedLocation;
+        if (selectedUniversity && selectedUniversity !== "All") {
+          params.university = selectedUniversity;
         }
         if (selectedInstitute && selectedInstitute !== "All") {
           params.institute = selectedInstitute;
         }
-        if (searchRank && !isNaN(searchRank)) {
-          params.rank_filter = parseInt(searchRank);
+        if (selectedCategory && selectedCategory !== "All") {
+          params.category = selectedCategory;
         }
+
         if (searchQuery && searchQuery.trim()) {
           params.search = searchQuery.trim();
+        }
+
+        if(rankMinInput) {
+          params.rank_min = rankMinInput;
+        }
+        if(percentileMinInput) {
+          params.percentile_min = percentileMinInput;
+        }
+        if(rankMaxInput) {
+          params.rank_max = rankMaxInput;
+        }
+        if(percentileMaxInput) {
+          params.percentile_max = percentileMaxInput;
         }
 
         // Load both data and statistics
@@ -64,9 +82,9 @@ function Rank({
               groupedData[key] = {
                 id: item.id,
                 college: item.institute_name || "Unknown Institute",
-                location: item.university || "Unknown Location",
+                university: item.university || "Unknown University",
                 branch: item.course_name || "Unknown Course",
-                category: item.category || "Unknown",
+                category: item.category || "Unknown Category",
                 year: 2024,
                 courseCode: item.course_code || "N/A",
                 quota: item.quota || "Unknown",
@@ -112,6 +130,7 @@ function Rank({
             uniqueInstitutes: collegeData.length > 0 ? collegeData.length : 0,
             totalRecords: 0,
             uniqueCourses: 0,
+            uniqueCategories: 0,
           });
         }
       } catch (err) {
@@ -128,11 +147,15 @@ function Rank({
   }, [
     currentPage,
     selectedBranch,
-    selectedLocation,
+    selectedUniversity,
     selectedInstitute,
-    searchRank,
+    rankMinInput,
+    rankMaxInput,
+    percentileMaxInput,
+    percentileMinInput,
     searchQuery,
     searchTrigger,
+    selectedCategory
   ]);
 
   const setSampleData = () => {
@@ -140,7 +163,7 @@ function Rank({
       {
         id: 1,
         college: "ABC College of Engineering",
-        location: "Pune",
+        university: "Pune",
         branch: "Computer Engineering",
         category: "OPEN",
         year: 2024,
@@ -154,7 +177,7 @@ function Rank({
       {
         id: 2,
         college: "XYZ Institute of Technology",
-        location: "Mumbai",
+        university: "Mumbai",
         branch: "Information Technology",
         category: "OPEN",
         year: 2024,
@@ -168,7 +191,7 @@ function Rank({
       {
         id: 3,
         college: "DEF Engineering College",
-        location: "Nagpur",
+        university: "Nagpur",
         branch: "Mechanical Engineering",
         category: "SC",
         year: 2024,
@@ -182,7 +205,7 @@ function Rank({
       {
         id: 4,
         college: "GHI College of Engineering",
-        location: "Pune",
+        university: "Pune",
         branch: "Electronics and Telecommunications",
         category: "OPEN",
         year: 2024,
@@ -196,7 +219,7 @@ function Rank({
       {
         id: 5,
         college: "JKL Institute of Technology",
-        location: "Mumbai",
+        university: "Mumbai",
         branch: "Civil Engineering",
         category: "OBC",
         year: 2024,
@@ -214,13 +237,8 @@ function Rank({
       filtered = filtered.filter((item) => item.branch === selectedBranch);
     }
 
-    if (selectedLocation !== "All") {
-      filtered = filtered.filter((item) => item.location === selectedLocation);
-    }
-
-    if (searchRank && !isNaN(searchRank)) {
-      const rank = parseInt(searchRank);
-      filtered = filtered.filter((item) => rank <= item.rankCutoff);
+    if (selectedUniversity !== "All") {
+      filtered = filtered.filter((item) => item.university === selectedUniversity);
     }
 
     if (searchQuery && searchQuery.trim()) {
@@ -230,7 +248,7 @@ function Rank({
           item.college.toLowerCase().includes(query) ||
           item.branch.toLowerCase().includes(query) ||
           item.courseCode.toLowerCase().includes(query) ||
-          item.location.toLowerCase().includes(query)
+          item.university.toLowerCase().includes(query)
       );
     }
 
@@ -273,7 +291,6 @@ function Rank({
 
   return (
     <div className="bg-white/70 font-[poppins] backdrop-blur-sm rounded-3xl shadow-xl shadow-blue-100/50 border border-gray-200/50 overflow-hidden">
-      {" "}
       {/* Results Header */}
       <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200/50">
         <div className="flex items-center justify-between">
@@ -410,26 +427,10 @@ function Rank({
                           {item.college}
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
-                          <svg
-                            className="w-4 h-4 mr-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 mr-2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
                           </svg>
-                          {item.location}
+                          {item.university}
                         </div>
                       </div>
                     </td>

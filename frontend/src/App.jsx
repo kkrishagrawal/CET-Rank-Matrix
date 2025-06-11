@@ -6,12 +6,19 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchRank, setSearchRank] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("All");
-  const [selectedLocation, setSelectedLocation] = useState("All");
+  const [selectedUniversity, setSelectedUniversity] = useState("All");
   const [selectedInstitute, setSelectedInstitute] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [rankMinInput, setRankMinInput] = useState("");
+  const [rankMaxInput, setRankMaxInput] = useState("");
+  const [percentileMaxInput, setPercentileMaxInput] = useState("");
+  const [percentileMinInput, setPercentileMinInput] = useState("");
+
   const [filterOptions, setFilterOptions] = useState({
     branches: ["All"],
     institutes: ["All"],
     universities: ["All"],
+    categories: ["All"],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,6 +37,8 @@ function App() {
             branches: response.filters.branches,
             institutes: response.filters.institutes,
             universities: response.filters.universities,
+            categories: response.filters.categories,
+            // rounds: [1,2,3]
           });
         } else {
           throw new Error("Backend API returned unsuccessful response");
@@ -136,7 +145,7 @@ function App() {
                 placeholder="Search by college name, course code, or branch..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 className="w-full pl-10 sm:pl-12 pr-20 sm:pr-32 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-xl sm:rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 placeholder-gray-400"
               />
               <button
@@ -163,7 +172,7 @@ function App() {
             </div>
 
             {/* Rank Filter Input */}
-            <div className="space-y-3">
+            {/* <div className="space-y-3">
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
                 Filter by Your Rank (Optional)
               </label>
@@ -174,12 +183,12 @@ function App() {
                 onChange={(e) => setSearchRank(e.target.value)}
                 className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 placeholder-gray-400"
               />
-            </div>
+            </div> */}
 
             {/* Filter Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <div className="space-y-3">
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">
                   Engineering Course
                 </label>
                 <div className="relative">
@@ -248,17 +257,17 @@ function App() {
 
               <div className="space-y-3">
                 <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  City Location
+                  University
                 </label>
                 <div className="relative">
                   <select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    value={selectedUniversity}
+                    onChange={(e) => setSelectedUniversity(e.target.value)}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
                   >
-                    {filterOptions.universities.map((location) => (
-                      <option key={location} value={location}>
-                        {location}
+                    {filterOptions.universities.map((university) => (
+                      <option key={university} value={university}>
+                        {university}
                       </option>
                     ))}
                   </select>
@@ -279,6 +288,96 @@ function App() {
                   </div>
                 </div>
               </div>
+              <div className="space-y-3">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Category
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
+                  >
+                    {console.log(filterOptions.categories)}
+                    {filterOptions.categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Minimum Rank
+                </label>
+                <div className="relative">
+                  <input
+                    value={rankMinInput}
+                    type="number"
+                    onChange={(e) => setRankMinInput(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
+                  >
+                  </input>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Maximum Rank
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={rankMaxInput}
+                    onChange={(e) => setRankMaxInput(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
+                  >
+                  </input>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Minimum Percentile
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={percentileMinInput}
+                    onChange={(e) => setPercentileMinInput(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
+                  >
+                  </input>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Maximum Percentile
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={percentileMaxInput}
+                    onChange={(e) => setPercentileMaxInput(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
+                  >
+                  </input>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -287,9 +386,14 @@ function App() {
           searchQuery={searchQuery}
           searchRank={searchRank}
           selectedBranch={selectedBranch}
-          selectedLocation={selectedLocation}
+          selectedUniversity={selectedUniversity}
           selectedInstitute={selectedInstitute}
           searchTrigger={searchTrigger}
+          selectedCategory={selectedCategory}
+          rankMinInput={rankMinInput}
+          rankMaxInput={rankMaxInput}
+          percentileMaxInput={percentileMaxInput}
+          percentileMinInput={percentileMinInput}
         />
       </div>
     </div>
