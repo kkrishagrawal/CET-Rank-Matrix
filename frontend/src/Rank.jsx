@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { apiService } from "./services/api.js";
+import axios from "axios";
+
+// import { apiService } from "./services/api.js";
 
 function Rank({
   searchQuery,
@@ -68,11 +70,11 @@ function Rank({
         }
 
         const [dataResponse, statsResponse] = await Promise.all([
-          apiService.getCETData(params),
-          apiService.getStatistics(),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/cet-data`, { params }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/statistics`),
         ]);
-        if (dataResponse.success) {
-          const transformedData = dataResponse.data.map((item) => ({
+        if (dataResponse.data.success) {
+          const transformedData = dataResponse.data.data.map((item) => ({
             id: item.id, 
             college: item.institute_name || "Unknown Institute",
             university: item.university || "Unknown University",
@@ -123,15 +125,15 @@ function Rank({
           }));
 
           setCollegeData(transformedData);
-          setPagination(dataResponse.pagination || pagination);
+          setPagination(dataResponse.data.pagination || pagination);
         } else {
           setError("Failed to load data from server");
           setSampleData();
         }
 
-        if (statsResponse.success) {
-          // console.log("Statistics received:", statsResponse.statistics); // Debug log
-          // setStatistics(statsResponse.statistics);
+        if (statsResponse.data.success) {
+          // console.log("Statistics received:", statsResponse.data.statistics); // Debug log
+          // setStatistics(statsResponse.data.statistics);
         } else {
           console.error("Failed to load statistics:", statsResponse);
           setStatistics({

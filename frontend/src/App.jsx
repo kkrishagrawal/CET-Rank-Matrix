@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
 import Rank from "./Rank.jsx";
-import { apiService } from "./services/api.js";
+// import { apiService } from "./services/api.js";
+import axios from "axios";
+
+const numberInputOnWheelPreventChange = (e) => {
+  // Prevent the input value change
+  e.target.blur()
+
+  // Refocus immediately, on the next tick (after the current function is done)
+  setTimeout(() => {
+    e.target.focus()
+  }, 0)
+}
+
 import Instruction from "./instruction.jsx"; // Import the Instruction component
 
 function App() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchRank, setSearchRank] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("All");
   const [selectedUniversity, setSelectedUniversity] = useState("All");
   const [selectedInstitute, setSelectedInstitute] = useState("All");
@@ -30,17 +41,19 @@ function App() {
     const loadFilterOptions = async () => {
       try {
         setLoading(true);
-        const response = await apiService.getFilterOptions();
-        if (response.success) {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/filter-options`
+        );
+        // const response = await apiService.getFilterOptions();
+        if (response.data) {
           // console.log(
-          //   `Successfully loaded ${response.filters.branches.length} branches, ${response.filters.institutes.length} institutes, and ${response.filters.universities.length} universities from backend API`
+          //   `Successfully loaded ${response.data.data.filters.branches.length} branches, ${response.data.data.filters.institutes.length} institutes, and ${response.data.data.filters.universities.length} universities from backend API`
           // );
           setFilterOptions({
-            branches: response.filters.branches,
-            institutes: response.filters.institutes,
-            universities: response.filters.universities,
-            categories: response.filters.categories,
-            // rounds: [1,2,3]
+            branches: response.data.filters.branches,
+            institutes: response.data.filters.institutes,
+            universities: response.data.filters.universities,
+            categories: response.data.filters.categories,
           });
         } else {
           throw new Error("Backend API returned unsuccessful response");
@@ -191,20 +204,6 @@ function App() {
               </button>
             </div>
 
-            {/* Rank Filter Input */}
-            {/* <div className="space-y-3">
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Filter by Your Rank (Optional)
-              </label>
-              <input
-                type="number"
-                placeholder="Enter your CET rank to see eligible colleges..."
-                value={searchRank}
-                onChange={(e) => setSearchRank(e.target.value)}
-                className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 placeholder-gray-400"
-              />
-            </div> */}
-
             {/* Filter Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <div className="space-y-3">
@@ -282,7 +281,9 @@ function App() {
                 <div className="relative">
                   <select
                     value={selectedUniversity}
-                    onChange={(e) => setSelectedUniversity(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedUniversity(e.target.value)
+                    }}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
                   >
                     {filterOptions.universities.map((university) => (
@@ -351,6 +352,7 @@ function App() {
                     value={rankMinInput}
                     type="number"
                     onChange={(e) => setRankMinInput(e.target.value)}
+                    onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
                   ></input>
                 </div>
@@ -364,6 +366,7 @@ function App() {
                     type="number"
                     value={rankMaxInput}
                     onChange={(e) => setRankMaxInput(e.target.value)}
+                    onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
                   ></input>
                 </div>
@@ -377,6 +380,7 @@ function App() {
                     type="number"
                     value={percentileMinInput}
                     onChange={(e) => setPercentileMinInput(e.target.value)}
+                    onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
                   ></input>
                 </div>
@@ -390,6 +394,7 @@ function App() {
                     type="number"
                     value={percentileMaxInput}
                     onChange={(e) => setPercentileMaxInput(e.target.value)}
+                    onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
                   ></input>
                 </div>
@@ -400,7 +405,6 @@ function App() {
 
         <Rank
           searchQuery={searchQuery}
-          searchRank={searchRank}
           selectedBranch={selectedBranch}
           selectedUniversity={selectedUniversity}
           selectedInstitute={selectedInstitute}
