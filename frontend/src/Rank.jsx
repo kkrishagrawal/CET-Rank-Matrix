@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { apiService } from "./services/api.js";
+import axios from "axios";
+
+// import { apiService } from "./services/api.js";
 
 function Rank({
   searchQuery,
@@ -69,14 +71,14 @@ function Rank({
 
         // Load both data and statistics
         const [dataResponse, statsResponse] = await Promise.all([
-          apiService.getCETData(params),
-          apiService.getStatistics(),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/cet-data`, { params }),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/statistics`),
         ]);
 
-        if (dataResponse.success) {
+        if (dataResponse.data.success) {
           const groupedData = {};
 
-          dataResponse.data.forEach((item) => {
+          dataResponse.data.data.forEach((item) => {
             const key = `${item.course_code}-${item.institute_name}-${item.category}`;
             if (!groupedData[key]) {
               groupedData[key] = {
@@ -114,15 +116,15 @@ function Rank({
           const transformedData = Object.values(groupedData);
 
           setCollegeData(transformedData);
-          setPagination(dataResponse.pagination || pagination);
+          setPagination(dataResponse.data.pagination || pagination);
         } else {
           setError("Failed to load data from server");
           setSampleData();
         }
 
-        if (statsResponse.success) {
-          console.log("Statistics received:", statsResponse.statistics); // Debug log
-          setStatistics(statsResponse.statistics);
+        if (statsResponse.data.success) {
+          console.log("Statistics received:", statsResponse.data.statistics); // Debug log
+          setStatistics(statsResponse.data.statistics);
         } else {
           console.error("Failed to load statistics:", statsResponse);
           // Set fallback statistics
