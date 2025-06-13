@@ -45,9 +45,9 @@ function App() {
           `${import.meta.env.VITE_API_URL}/api/filter-options`
         );
         // const response = await apiService.getFilterOptions();
-        if (response.success) {
+        if (response.data) {
           // console.log(
-          //   `Successfully loaded ${response.data.filters.branches.length} branches, ${response.data.filters.institutes.length} institutes, and ${response.data.filters.universities.length} universities from backend API`
+          //   `Successfully loaded ${response.data.data.filters.branches.length} branches, ${response.data.data.filters.institutes.length} institutes, and ${response.data.data.filters.universities.length} universities from backend API`
           // );
           setFilterOptions({
             branches: response.data.filters.branches,
@@ -281,7 +281,9 @@ function App() {
                 <div className="relative">
                   <select
                     value={selectedUniversity}
-                    onChange={(e) => setSelectedUniversity(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedUniversity(e.target.value)
+                    }}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
                   >
                     {filterOptions.universities.map((university) => (

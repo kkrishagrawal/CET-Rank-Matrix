@@ -9,125 +9,55 @@ const getCETData = async (req, res) => {
       institute,
       category,
       university,
+      round,
       search,
       rank_min,
       rank_max,
       percentile_min,
       percentile_max,
-      sort_by = "university, category, closing_percentile",
-      sort_order = "asc, asc, desc",
+      sort_by = "university,category,closing_percentile",
+      sort_order = "asc,asc,desc",
     } = req.query;
 
+    const { data: result, error } = await supabase.rpc("get_cet_data", {
+      p_page: parseInt(page),
+      p_limit: parseInt(limit),
+      p_branch: branch && branch !== "All" ? branch : null,
+      p_institute: institute && institute !== "All" ? institute : null,
+      p_category: category && category !== "All" ? category : null,
+      p_university: university && university !== "All" ? university : null,
+      p_round: round ? parseInt(round) : null,
+      p_search: search || null,
+      p_rank_min: rank_min && !isNaN(rank_min) ? parseInt(rank_min) : null,
+      p_rank_max: rank_max && !isNaN(rank_max) ? parseInt(rank_max) : null,
+      p_percentile_min:
+        percentile_min && !isNaN(percentile_min)
+          ? parseFloat(percentile_min)
+          : null,
+      p_percentile_max:
+        percentile_max && !isNaN(percentile_max)
+          ? parseFloat(percentile_max)
+          : null,
+      p_sort_by: sort_by,
+      p_sort_order: sort_order,
+    });
 
-    let query = supabase.from("CET Rank Matrix - 2024").select("*");
-
-    if (branch && branch !== "All") {
-      query = query.ilike("course_name", `%${branch}%`);
+    if (error) {
+      console.error("Database function error:", error);
+      throw error;
     }
 
-    if (university && university !== "All") {
-      query = query.eq("university", `%${university}%`);
-    }
-
-    if (institute && institute !== "All") {
-      query = query.ilike("institute_name", `%${institute}%`);
-    }
-
-    if (category && category !== "All") {
-      query = query.ilike("category", category);
-    }
-
-    if (search) {
-      query = query.or(
-        `course_code.ilike.%${search}%,institute_name.ilike.%${search}%,course_name.ilike.%${search}%`
-      );
-    }
-
-    if (rank_min && !isNaN(rank_min)) {
-      query = query.gte("closing_rank", parseInt(rank_min));
-    }
-    if (rank_max && !isNaN(rank_max)) {
-      query = query.lte("closing_rank", parseInt(rank_max));
-    }
-
-    // Range filters for closing_percentile
-    if (percentile_min && !isNaN(percentile_min)) {
-      query = query.gte("closing_percentile", parseFloat(percentile_min));
-    }
-    if (percentile_max && !isNaN(percentile_max)) {
-      query = query.lte("closing_percentile", parseFloat(percentile_max));
-    }
-
-    const ascending = sort_order === "asc";
-    query = query.order(sort_by, { ascending });
-        const applyFilters = (baseQuery) => {
-      let filteredQuery = baseQuery;
-
-      if (branch && branch !== "All") {
-        filteredQuery = filteredQuery.ilike("course_name", `%${branch}%`);
-      }
-      if (university && university !== "All") {
-        filteredQuery = filteredQuery.ilike("university", `%${university}%`);
-      }
-      if (institute && institute !== "All") {
-        filteredQuery = filteredQuery.ilike("institute_name", `%${institute}%`);
-      }
-      if (category && category !== "All") {
-        filteredQuery = filteredQuery.eq("category", category);
-      }
-      if (search) {
-        filteredQuery = filteredQuery.or(
-          `course_code.ilike.%${search}%,institute_name.ilike.%${search}%,course_name.ilike.%${search}%`
-        );
-      }
-      // Range filters for closing_rank
-      if (rank_min && !isNaN(rank_min)) {
-        filteredQuery = filteredQuery.gte("closing_rank", parseInt(rank_min));
-      }
-      if (rank_max && !isNaN(rank_max)) {
-        filteredQuery = filteredQuery.lte("closing_rank", parseInt(rank_max));
-      }
-
-      // Range filters for closing_percentile
-      if (percentile_min && !isNaN(percentile_min)) {
-        filteredQuery = filteredQuery.gte("closing_percentile", parseFloat(percentile_min));
-      }
-      if (percentile_max && !isNaN(percentile_max)) {
-        filteredQuery = filteredQuery.lte("closing_percentile", parseFloat(percentile_max));
-      }
-      return filteredQuery;
-    };
-
-    query = applyFilters(query);
-    let countQuery = applyFilters(
-      supabase
-        .from("CET Rank Matrix - 2024")
-        .select("*", { count: "exact", head: true })
-    );
-
-    const { count: totalCount } = await countQuery;
-
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
-
-    const { data, error } = await query;
-
-    if (error) throw error;
+    const functionResult = result[0];
+    const data = functionResult.data;
+    const pagination = functionResult.pagination;
 
     res.json({
       success: true,
-      data,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasNext: page * limit < totalCount,
-        hasPrev: page > 1,
-      },
+      data: data,
+      pagination: pagination,
     });
   } catch (error) {
+    console.error("API Error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",

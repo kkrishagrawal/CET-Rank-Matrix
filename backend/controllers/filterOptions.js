@@ -2,7 +2,6 @@ const { supabase } = require('../config/supabase'); // Adjust path as needed
 
 const filterOptions = async (req, res) => {
   try {
-    // First, try to use RPC functions for better performance
     const [
       coursesResult,
       institutesResult,
@@ -17,7 +16,6 @@ const filterOptions = async (req, res) => {
       supabase.rpc("get_unique_rounds"),
     ]);
 
-    // Check if any RPC function failed
     if (
       coursesResult.error ||
       institutesResult.error ||
@@ -28,27 +26,23 @@ const filterOptions = async (req, res) => {
       throw new Error("RPC functions not available");
     }
 
-    // Process RPC results
     const uniqueCourses = [
       "All",
-      ...(coursesResult.data?.map((item) => item.course_name).filter(Boolean) || []),
+      ...(coursesResult.data?.map((item) => item.course_name) || []),
     ];
     const uniqueInstitutes = [
       "All",
-      ...(institutesResult.data?.map((item) => item.institute_name).filter(Boolean) || []),
+      ...(institutesResult.data?.map((item) => item.institute_name) || []),
     ];
     const uniqueUniversities = [
       "All",
-      ...(universitiesResult.data?.map((item) => item.university).filter(Boolean) || []),
+      ...(universitiesResult.data?.map((item) => item.university) || []),
     ];
     const uniqueCategories = [
       "All",
-      ...(categoriesResult.data?.map((item) => item.category).filter(Boolean) || []),
+      ...(categoriesResult.data?.map((item) => item.category) || []),
     ];
-    const uniqueRounds = [
-      "All",
-      ...(roundsResult.data?.map((item) => item.round).filter(Boolean) || []),
-    ];
+    const uniqueRounds = roundsResult.data?.map((item) => item.round) || [];
 
     res.json({
       success: true,
@@ -60,13 +54,17 @@ const filterOptions = async (req, res) => {
         rounds: uniqueRounds,
       },
     });
-
   } catch (error) {
-    console.log('RPC functions failed, falling back to direct queries:', error);
-    
+    console.log("RPC functions not available, falling back to direct queries");
+
     try {
-      // Fallback: Direct database queries
-      const [coursesResult, universitiesResult, institutesResult, categoriesResult, roundsResult] = await Promise.all([
+      const [
+        coursesResult,
+        universitiesResult,
+        institutesResult,
+        categoriesResult,
+        roundsResult,
+      ] = await Promise.all([
         supabase
           .from("CET Rank Matrix - 2024")
           .select("course_name")
@@ -91,50 +89,32 @@ const filterOptions = async (req, res) => {
           .from("CET Rank Matrix - 2024")
           .select("round")
           .not("round", "is", null)
-          .limit(1000),
+          .limit(100),
       ]);
 
-      // Check for errors in fallback queries
-      if (coursesResult.error || universitiesResult.error || institutesResult.error || 
-          categoriesResult.error || roundsResult.error) {
-        throw new Error("Database queries failed");
-      }
-
-      // Process fallback results and remove duplicates
       const uniqueCourses = [
         "All",
-        ...Array.from(new Set(
-          coursesResult.data?.map((item) => item.course_name).filter(Boolean) || []
-        )).sort(),
+        ...new Set(coursesResult.data?.map((item) => item.course_name) || []),
       ];
-
       const uniqueUniversities = [
         "All",
-        ...Array.from(new Set(
-          universitiesResult.data?.map((item) => item.university).filter(Boolean) || []
-        )).sort(),
+        ...new Set(
+          universitiesResult.data?.map((item) => item.university) || []
+        ),
       ];
-
-      const uniqueInstitutes = [
-        "All",
-        ...Array.from(new Set(
-          institutesResult.data?.map((item) => item.institute_name).filter(Boolean) || []
-        )).sort(),
-      ];
-
       const uniqueCategories = [
         "All",
-        ...Array.from(new Set(
-          categoriesResult.data?.map((item) => item.category).filter(Boolean) || []
-        )).sort(),
+        ...new Set(categoriesResult.data?.map((item) => item.category) || []),
       ];
-
-      const uniqueRounds = [
+      const uniqueInstitutes = [
         "All",
-        ...Array.from(new Set(
-          roundsResult.data?.map((item) => item.round).filter(Boolean) || []
-        )).sort(),
+        ...new Set(
+          institutesResult.data?.map((item) => item.institute_name) || []
+        ),
       ];
+      const uniqueRounds = [
+        ...new Set(roundsResult.data?.map((item) => item.round) || []),
+      ].sort((a, b) => a - b);
 
       res.json({
         success: true,
@@ -146,14 +126,12 @@ const filterOptions = async (req, res) => {
           rounds: uniqueRounds,
         },
       });
-
     } catch (fallbackError) {
-      console.error('Both RPC and fallback queries failed:', fallbackError);
-      
+      console.error("Fallback query error:", fallbackError);
       res.status(500).json({
         success: false,
         message: "Failed to fetch filter options",
-        error: process.env.NODE_ENV === 'development' ? fallbackError : undefined,
+        error: fallbackError.message,
       });
     }
   }
