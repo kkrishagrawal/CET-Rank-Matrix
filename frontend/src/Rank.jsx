@@ -328,11 +328,9 @@ function Rank({
               <p className="text-gray-600">
                 {loading
                   ? "Loading..."
-                  : statistics && statistics.uniqueInstitutes > 0
-                  ? `${statistics.uniqueInstitutes} Colleges Of Maharashtra`
-                  : collegeData.length > 0
-                  ? `${pagination.total} Results Found`
-                  : "Maharashtra Engineering Colleges Database"}
+                  : 
+                  `${pagination.total} Results Found`
+                  }
               </p>
               {error && (
                 <div className="flex items-center text-amber-600 text-sm">
