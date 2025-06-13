@@ -29,131 +29,49 @@ app.get("/api/cet-data", async (req, res) => {
       rank_max,
       percentile_min,
       percentile_max,
-      sort_by = "university, category, closing_percentile",
-      sort_order = "asc, asc, desc",
+      sort_by = "university,category,closing_percentile",
+      sort_order = "asc,asc,desc",
     } = req.query;
 
-    let query = supabase.from("CET Rank Matrix - 2024").select("*");
+    const { data: result, error } = await supabase.rpc("get_cet_data", {
+      p_page: parseInt(page),
+      p_limit: parseInt(limit),
+      p_branch: branch && branch !== "All" ? branch : null,
+      p_institute: institute && institute !== "All" ? institute : null,
+      p_category: category && category !== "All" ? category : null,
+      p_university: university && university !== "All" ? university : null,
+      p_round: round ? parseInt(round) : null,
+      p_search: search || null,
+      p_rank_min: rank_min && !isNaN(rank_min) ? parseInt(rank_min) : null,
+      p_rank_max: rank_max && !isNaN(rank_max) ? parseInt(rank_max) : null,
+      p_percentile_min:
+        percentile_min && !isNaN(percentile_min)
+          ? parseFloat(percentile_min)
+          : null,
+      p_percentile_max:
+        percentile_max && !isNaN(percentile_max)
+          ? parseFloat(percentile_max)
+          : null,
+      p_sort_by: sort_by,
+      p_sort_order: sort_order,
+    });
 
-    if (branch && branch !== "All") {
-      query = query.ilike("course_name", `%${branch}%`);
+    if (error) {
+      console.error("Database function error:", error);
+      throw error;
     }
 
-    if (university && university !== "All") {
-      query = query.ilike("university", `%${university}%`);
-    }
-
-    if (institute && institute !== "All") {
-      query = query.ilike("institute_name", `%${institute}%`);
-    }
-
-    if (category && category !== "All") {
-      query = query.ilike("category", category);
-    }
-
-    if (university && university !== "All") {
-      query = query.eq("university", university);
-    }
-
-    if (round) {
-      query = query.eq("round", parseInt(round));
-    }
-
-    if (search) {
-      query = query.or(
-        `course_code.ilike.%${search}%,institute_name.ilike.%${search}%,course_name.ilike.%${search}%`
-      );
-    }
-
-    if (rank_min && !isNaN(rank_min)) {
-      query = query.gte("closing_rank", parseInt(rank_min));
-    }
-    if (rank_max && !isNaN(rank_max)) {
-      query = query.lte("closing_rank", parseInt(rank_max));
-    }
-
-    // Range filters for closing_percentile
-    if (percentile_min && !isNaN(percentile_min)) {
-      query = query.gte("closing_percentile", parseFloat(percentile_min));
-    }
-    if (percentile_max && !isNaN(percentile_max)) {
-      query = query.lte("closing_percentile", parseFloat(percentile_max));
-    }
-
-    const ascending = sort_order === "asc";
-    query = query.order(sort_by, { ascending });
-
-    const applyFilters = (baseQuery) => {
-      let filteredQuery = baseQuery;
-
-      if (branch && branch !== "All") {
-        filteredQuery = filteredQuery.ilike("course_name", `%${branch}%`);
-      }
-      if (university && university !== "All") {
-        filteredQuery = filteredQuery.ilike("university", `%${university}%`);
-      }
-      if (institute && institute !== "All") {
-        filteredQuery = filteredQuery.ilike("institute_name", `%${institute}%`);
-      }
-      if (category && category !== "All") {
-        filteredQuery = filteredQuery.eq("category", category);
-      }
-      if (round) {
-        filteredQuery = filteredQuery.eq("round", parseInt(round));
-      }
-      if (search) {
-        filteredQuery = filteredQuery.or(
-          `course_code.ilike.%${search}%,institute_name.ilike.%${search}%,course_name.ilike.%${search}%`
-        );
-      }
-      // Range filters for closing_rank
-      if (rank_min && !isNaN(rank_min)) {
-        filteredQuery = filteredQuery.gte("closing_rank", parseInt(rank_min));
-      }
-      if (rank_max && !isNaN(rank_max)) {
-        filteredQuery = filteredQuery.lte("closing_rank", parseInt(rank_max));
-      }
-
-      // Range filters for closing_percentile
-      if (percentile_min && !isNaN(percentile_min)) {
-        filteredQuery = filteredQuery.gte("closing_percentile", parseFloat(percentile_min));
-      }
-      if (percentile_max && !isNaN(percentile_max)) {
-        filteredQuery = filteredQuery.lte("closing_percentile", parseFloat(percentile_max));
-      }
-      return filteredQuery;
-    };
-
-    query = applyFilters(query);
-    let countQuery = applyFilters(
-      supabase
-        .from("CET Rank Matrix - 2024")
-        .select("*", { count: "exact", head: true })
-    );
-
-    const { count: totalCount } = await countQuery;
-
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
-
-    const { data, error } = await query;
-
-    if (error) throw error;
+    const functionResult = result[0];
+    const data = functionResult.data;
+    const pagination = functionResult.pagination;
 
     res.json({
       success: true,
-      data,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasNext: page * limit < totalCount,
-        hasPrev: page > 1,
-      },
+      data: data,
+      pagination: pagination,
     });
   } catch (error) {
+    console.error("API Error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -204,6 +122,7 @@ app.get("/api/filter-options", async (req, res) => {
       "All",
       ...(categoriesResult.data?.map((item) => item.category) || []),
     ];
+    const uniqueRounds = roundsResult.data?.map((item) => item.round) || [];
 
     res.json({
       success: true,
@@ -212,58 +131,89 @@ app.get("/api/filter-options", async (req, res) => {
         institutes: uniqueInstitutes,
         universities: uniqueUniversities,
         categories: uniqueCategories,
+        rounds: uniqueRounds,
       },
     });
   } catch (error) {
-    const [coursesResult, universitiesResult, institutesResult, categoriesResult] = await Promise.all([
-      supabase
-        .from("CET Rank Matrix - 2024")
-        .select("course_name")
-        .not("course_name", "is", null)
-        .limit(1000),
-      supabase
-        .from("CET Rank Matrix - 2024")
-        .select("university")
-        .not("university", "is", null)
-        .limit(1000),
-      supabase
-        .from("CET Rank Matrix - 2024")
-        .select("institute_name")
-        .not("institute_name", "is", null)
-        .limit(1000),
-      supabase
-        .from("CET Rank Matrix - 2024")
-        .select("category")
-        .not("category", "is", null)
-        .limit(1000),
-    ]);
+    console.log("RPC functions not available, falling back to direct queries");
 
-    const uniqueCourses = [
-      "All",
-      ...new Set(coursesResult.data?.map((item) => item.course_name) || []),
-    ];
-    const uniqueUniversities = [
-      "All",
-      ...new Set(universitiesResult.data?.map((item) => item.university) || []),
-    ];
-    const uniqueCategories = [
-      "All",
-      ...new Set(categoriesResult.data?.map((item) => item.categories) || []),
-    ];
-    const uniqueInstitutes = [
-      "All",
-      ...new Set(institutesResult.data?.map((item) => item.institute_name) || []),
-    ];
+    try {
+      const [
+        coursesResult,
+        universitiesResult,
+        institutesResult,
+        categoriesResult,
+        roundsResult,
+      ] = await Promise.all([
+        supabase
+          .from("CET Rank Matrix - 2024")
+          .select("course_name")
+          .not("course_name", "is", null)
+          .limit(1000),
+        supabase
+          .from("CET Rank Matrix - 2024")
+          .select("university")
+          .not("university", "is", null)
+          .limit(1000),
+        supabase
+          .from("CET Rank Matrix - 2024")
+          .select("institute_name")
+          .not("institute_name", "is", null)
+          .limit(1000),
+        supabase
+          .from("CET Rank Matrix - 2024")
+          .select("category")
+          .not("category", "is", null)
+          .limit(1000),
+        supabase
+          .from("CET Rank Matrix - 2024")
+          .select("round")
+          .not("round", "is", null)
+          .limit(100),
+      ]);
 
-    res.json({
-      success: true,
-      filters: {
-        branches: uniqueCourses,
-        institutes: uniqueInstitutes,
-        universities: uniqueUniversities,
-        categories: uniqueCategories
-      },
-    });
+      const uniqueCourses = [
+        "All",
+        ...new Set(coursesResult.data?.map((item) => item.course_name) || []),
+      ];
+      const uniqueUniversities = [
+        "All",
+        ...new Set(
+          universitiesResult.data?.map((item) => item.university) || []
+        ),
+      ];
+      const uniqueCategories = [
+        "All",
+        ...new Set(categoriesResult.data?.map((item) => item.category) || []),
+      ];
+      const uniqueInstitutes = [
+        "All",
+        ...new Set(
+          institutesResult.data?.map((item) => item.institute_name) || []
+        ),
+      ];
+      const uniqueRounds = [
+        ...new Set(roundsResult.data?.map((item) => item.round) || []),
+      ].sort((a, b) => a - b);
+
+      res.json({
+        success: true,
+        filters: {
+          branches: uniqueCourses,
+          institutes: uniqueInstitutes,
+          universities: uniqueUniversities,
+          categories: uniqueCategories,
+          rounds: uniqueRounds,
+        },
+      });
+    } catch (fallbackError) {
+      console.error("Fallback query error:", fallbackError);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch filter options",
+        error: fallbackError.message,
+      });
+    }
   }
 });
 
@@ -274,6 +224,7 @@ app.get("/api/statistics", async (req, res) => {
     );
 
     if (statsError) {
+      console.log("RPC function not available, falling back to basic count");
       const { count: totalRecords } = await supabase
         .from("CET Rank Matrix - 2024")
         .select("*", { count: "exact", head: true });
@@ -284,8 +235,9 @@ app.get("/api/statistics", async (req, res) => {
           totalRecords: totalRecords || 0,
           uniqueInstitutes: 0,
           uniqueCourses: 0,
+          uniqueCategories: 0,
           rankRange: { min: 0, max: 0 },
-          uniqueCategories: 0
+          percentileRange: { min: 0, max: 0 },
         },
       });
     }
@@ -298,14 +250,19 @@ app.get("/api/statistics", async (req, res) => {
         totalRecords: Number(statistics.total_records) || 0,
         uniqueInstitutes: Number(statistics.unique_institutes) || 0,
         uniqueCourses: Number(statistics.unique_courses) || 0,
-        uniqueCategories: Number(statistics.categories) || 0,
+        uniqueCategories: Number(statistics.unique_categories) || 0,
         rankRange: {
           min: Number(statistics.min_rank) || 0,
           max: Number(statistics.max_rank) || 0,
         },
+        percentileRange: {
+          min: Number(statistics.min_percentile) || 0,
+          max: Number(statistics.max_percentile) || 0,
+        },
       },
     });
   } catch (error) {
+    console.error("Statistics API error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -314,7 +271,16 @@ app.get("/api/statistics", async (req, res) => {
   }
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
   res.status(500).json({
     success: false,
     message: "Something went wrong!",
