@@ -331,7 +331,7 @@ function Rank({
                   : statistics && statistics.uniqueInstitutes > 0
                   ? `${statistics.uniqueInstitutes} Colleges Of Maharashtra`
                   : collegeData.length > 0
-                  ? `${collegeData.length} Results Found`
+                  ? `${pagination.total} Results Found`
                   : "Maharashtra Engineering Colleges Database"}
               </p>
               {error && (
