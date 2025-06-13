@@ -13,6 +13,7 @@ const numberInputOnWheelPreventChange = (e) => {
   }, 0)
 }
 
+import Instruction from "./instruction.jsx"; // Import the Instruction component
 
 function App() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,6 +25,7 @@ function App() {
   const [rankMaxInput, setRankMaxInput] = useState("");
   const [percentileMaxInput, setPercentileMaxInput] = useState("");
   const [percentileMinInput, setPercentileMinInput] = useState("");
+  const [isInstructionModalOpen, setIsInstructionModalOpen] = useState(false); // State for modal
 
   const [filterOptions, setFilterOptions] = useState({
     branches: ["All"],
@@ -43,10 +45,10 @@ function App() {
           `${import.meta.env.VITE_API_URL}/api/filter-options`
         );
         // const response = await apiService.getFilterOptions();
-        if (response.data) {
-          console.log(
-            `Successfully loaded ${response.data.filters.branches.length} branches, ${response.data.filters.institutes.length} institutes, and ${response.data.filters.universities.length} universities from backend API`
-          );
+        if (response.success) {
+          // console.log(
+          //   `Successfully loaded ${response.data.filters.branches.length} branches, ${response.data.filters.institutes.length} institutes, and ${response.data.filters.universities.length} universities from backend API`
+          // );
           setFilterOptions({
             branches: response.data.filters.branches,
             institutes: response.data.filters.institutes,
@@ -68,7 +70,7 @@ function App() {
   }, []);
 
   const handleSearch = () => {
-    console.log("Searching for:", searchQuery);
+    // console.log("Searching for:", searchQuery);
     setSearchTrigger((prev) => prev + 1);
   };
 
@@ -76,6 +78,10 @@ function App() {
     if (e.key === "Enter") {
       handleSearch();
     }
+  };
+
+  const toggleInstructionModal = () => {
+    setIsInstructionModalOpen(!isInstructionModalOpen);
   };
 
   return (
@@ -109,6 +115,14 @@ function App() {
               Discover rank cutoffs and percentiles to make informed decisions
               about your engineering college choices
             </p>
+            <div className="mt-4">
+              <button
+                onClick={toggleInstructionModal}
+                className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-300"
+              >
+                View Category Color Info
+              </button>
+            </div>
 
             {error && (
               <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 text-yellow-800 mx-4 sm:mx-0">
@@ -133,6 +147,12 @@ function App() {
       </div>
 
       <div className="max-w-[95vw] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        {/* Instruction Modal */}
+        <Instruction
+          isOpen={isInstructionModalOpen}
+          onClose={toggleInstructionModal}
+        />
+
         {/* Search and Filter Section */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl shadow-blue-100/50 border border-gray-200/50 p-4 sm:p-6 lg:p-8">
           <div className="space-y-6 sm:space-y-8">
@@ -297,7 +317,7 @@ function App() {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
                   >
-                    {console.log(filterOptions.categories)}
+                    {/* {console.log(filterOptions.categories)} */}
                     {filterOptions.categories.map((category) => (
                       <option key={category} value={category}>
                         {category}
@@ -332,8 +352,7 @@ function App() {
                     onChange={(e) => setRankMinInput(e.target.value)}
                     onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
-                  >
-                  </input>
+                  ></input>
                 </div>
               </div>
               <div className="space-y-3">
@@ -347,8 +366,7 @@ function App() {
                     onChange={(e) => setRankMaxInput(e.target.value)}
                     onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
-                  >
-                  </input>
+                  ></input>
                 </div>
               </div>
               <div className="space-y-3">
@@ -362,8 +380,7 @@ function App() {
                     onChange={(e) => setPercentileMinInput(e.target.value)}
                     onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
-                  >
-                  </input>
+                  ></input>
                 </div>
               </div>
               <div className="space-y-3">
@@ -377,8 +394,7 @@ function App() {
                     onChange={(e) => setPercentileMaxInput(e.target.value)}
                     onWheel={numberInputOnWheelPreventChange}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white"
-                  >
-                  </input>
+                  ></input>
                 </div>
               </div>
             </div>
