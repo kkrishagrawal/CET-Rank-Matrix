@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// import { apiService } from "./services/api.js";
-
 function Rank({
   searchQuery,
   selectedBranch,
@@ -730,6 +728,7 @@ function Rank({
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!pagination.hasPrev}
+                aria-label="Previous Page"
                 className={`flex items-center px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
                   !pagination.hasPrev
                     ? "text-gray-400 cursor-not-allowed bg-gray-100"
@@ -793,6 +792,7 @@ function Rank({
                   return (
                     <button
                       key={page}
+                      aria-label="Page Number"
                       onClick={() => handlePageChange(page)}
                       className={`w-8 h-8 sm:w-10 sm:h-10 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${
                         pagination.page === page
@@ -807,6 +807,7 @@ function Rank({
               </div>
 
               <button
+                aria-label="Next Page"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!pagination.hasNext}
                 className={`flex items-center px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 ${

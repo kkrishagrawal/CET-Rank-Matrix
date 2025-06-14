@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Rank from "./Rank.jsx";
-// import { apiService } from "./services/api.js";
 import axios from "axios";
 
 const numberInputOnWheelPreventChange = (e) => {
@@ -174,6 +173,7 @@ function App() {
                 </svg>
               </div>
               <input
+                aria-label="search"
                 type="text"
                 placeholder="Search by college name, course code, or branch..."
                 value={searchQuery}
@@ -183,6 +183,7 @@ function App() {
               />
               <button
                 onClick={handleSearch}
+                aria-label="Search"
                 className="absolute right-2 top-2 bottom-2 px-4 sm:px-8 bg-blue-900 text-white font-semibold rounded-lg sm:rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl text-sm sm:text-base"
               >
                 <span className="hidden sm:inline">Search</span>
@@ -207,82 +208,20 @@ function App() {
             {/* Filter Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <div className="space-y-3">
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">
-                  Engineering Course
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedBranch}
-                    onChange={(e) => setSelectedBranch(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
-                  >
-                    {filterOptions.branches.map((branch) => (
-                      <option key={branch} value={branch}>
-                        {branch}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 pointer-events-none">
-                    <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                  Institute/College
-                </label>
-                <div className="relative">
-                  <select
-                    value={selectedInstitute}
-                    onChange={(e) => setSelectedInstitute(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
-                  >
-                    {filterOptions.institutes.map((institute) => (
-                      <option key={institute} value={institute}>
-                        {institute}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 pointer-events-none">
-                    <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
                 <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
                   University
                 </label>
                 <div className="relative">
                   <select
+                    aria-label="University Selector"
                     value={selectedUniversity}
                     onChange={(e) => {
                       setSelectedUniversity(e.target.value)
+                      // setFilterOptions({
+                      //   branches: response.data.filters.branches,
+                      //   institutes: response.data.filters.institutes,
+                      //   categories: response.data.filters.categories,
+                      // });
                     }}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
                   >
@@ -311,10 +250,79 @@ function App() {
               </div>
               <div className="space-y-3">
                 <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Institute/College
+                </label>
+                <div className="relative">
+                  <select
+                    aria-label="Institute/College Selector"
+                    value={selectedInstitute}
+                    onChange={(e) => setSelectedInstitute(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
+                  >
+                    {filterOptions.institutes.map((institute) => (
+                      <option key={institute} value={institute}>
+                        {institute}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">
+                  Engineering Course
+                </label>
+                <div className="relative">
+                  <select
+                    aria-label="Course/Branch Selector"
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
+                  >
+                    {filterOptions.branches.map((branch) => (
+                      <option key={branch} value={branch}>
+                        {branch}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wide">
                   Category
                 </label>
                 <div className="relative">
                   <select
+                    aria-label="Category Selector"
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full px-3 sm:px-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 appearance-none bg-white cursor-pointer"
@@ -349,6 +357,7 @@ function App() {
                 </label>
                 <div className="relative">
                   <input
+                    aria-label="Minimum Rank Input Field"
                     value={rankMinInput}
                     type="number"
                     onChange={(e) => setRankMinInput(e.target.value)}
@@ -363,6 +372,7 @@ function App() {
                 </label>
                 <div className="relative">
                   <input
+                    aria-label="Maximum Rank Input Field"
                     type="number"
                     value={rankMaxInput}
                     onChange={(e) => setRankMaxInput(e.target.value)}
@@ -377,6 +387,7 @@ function App() {
                 </label>
                 <div className="relative">
                   <input
+                    aria-label="Minimum Percentile Input Field"
                     type="number"
                     value={percentileMinInput}
                     onChange={(e) => setPercentileMinInput(e.target.value)}
@@ -391,6 +402,7 @@ function App() {
                 </label>
                 <div className="relative">
                   <input
+                    aria-label="Maximum Percentile Input Field"
                     type="number"
                     value={percentileMaxInput}
                     onChange={(e) => setPercentileMaxInput(e.target.value)}
