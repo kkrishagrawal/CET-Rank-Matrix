@@ -51,7 +51,6 @@ const Instruction = ({ isOpen, onClose }) => {
     { name: "PWD", description: "Persons with Disabilities" },
     { name: "AI", description: "All India Quota" },
     { name: "MI", description: "Minority Quota" },
-    { name: "GO", description: "Government Quota (specific contexts)" },
     { name: "ORPHAN", description: "Orphan Quota" },
     {
       name: "TFWS",

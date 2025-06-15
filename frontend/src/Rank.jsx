@@ -27,6 +27,22 @@ function Rank({
     hasNext: false,
     hasPrev: false,
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    selectedBranch,
+    selectedUniversity,
+    selectedInstitute,
+    rankMinInput,
+    rankMaxInput,
+    percentileMinInput,
+    percentileMaxInput,
+    searchQuery,
+    searchTrigger,
+    selectedCategory,
+  ]);
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -73,10 +89,10 @@ function Rank({
         ]);
         if (dataResponse.data.success) {
           const transformedData = dataResponse.data.data.map((item) => ({
-            id: item.id, 
+            id: item.id,
             college: item.institute_name || "Unknown Institute",
             university: item.university || "Unknown University",
-            branch: item.course_name || "Unknown Course", 
+            branch: item.course_name || "Unknown Course",
             category: item.category || "Unknown Category",
             courseCode: item.course_code || "N/A",
             round1: {
@@ -115,11 +131,11 @@ function Rank({
             rankCutoff:
               item.rankcutoff !== undefined && item.rankcutoff !== null
                 ? item.rankcutoff
-                : 0, 
+                : 0,
             percentile:
               item.percentile !== undefined && item.percentile !== null
                 ? item.percentile
-                : 0, 
+                : 0,
           }));
 
           setCollegeData(transformedData);
@@ -271,7 +287,7 @@ function Rank({
       hasNext: filtered.length > itemsPerPage,
       hasPrev: false,
     });
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -309,13 +325,13 @@ function Rank({
     } else if (upperCategory.includes("ORPHAN")) {
       return "bg-gray-300 text-gray-900 border-gray-400";
     } else {
-      return "bg-gray-100 text-gray-800 border-gray-200"; 
+      return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
-  
+
   const startIndex = (pagination.page - 1) * pagination.limit;
   const endIndex = startIndex + collegeData.length;
-  const currentData = collegeData; 
+  const currentData = collegeData;
 
   return (
     <div className="bg-white/70 font-[poppins] backdrop-blur-sm rounded-3xl shadow-xl shadow-blue-100/50 border border-gray-200/50 overflow-hidden">
@@ -326,11 +342,7 @@ function Rank({
             <h2 className="text-2xl font-bold text-gray-900">Search Results</h2>{" "}
             <div className="flex items-center space-x-4 mt-1">
               <p className="text-gray-600">
-                {loading
-                  ? "Loading..."
-                  : 
-                  `${pagination.total} Results Found`
-                  }
+                {loading ? "Loading..." : `${pagination.total} Results Found`}
               </p>
               {error && (
                 <div className="flex items-center text-amber-600 text-sm">
@@ -411,7 +423,7 @@ function Rank({
                       {/* Course Info */}
                       <div className="flex flex-col space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          <span className="text-xs font-medium text-gray-700 uppercase tracking-wide">
                             Course
                           </span>
                           <span
@@ -419,13 +431,13 @@ function Rank({
                               item.category
                             )}`}
                           >
-                            {item.category}
+                            Category: {item.category}
                           </span>
                         </div>
                         <div className="text-sm font-semibold text-gray-900">
                           {item.branch}
                         </div>
-                        <div className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded inline-block w-fit">
+                        <div className="text-xs font-bold font-mono text-blue-800 bg-blue-50 px-2 py-1 rounded inline-block w-fit">
                           {item.courseCode}
                         </div>
                       </div>
@@ -433,13 +445,13 @@ function Rank({
                       {/* Final Cutoff - Prominent */}
                       <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border-2 border-green-200">
                         <div className="text-center">
-                          <div className="text-xs text-green-600 font-medium uppercase tracking-wide mb-1">
+                          <div className="text-xs text-black font-medium uppercase tracking-wide mb-1">
                             Final Cutoff
                           </div>
-                          <div className="text-lg font-bold text-green-700">
+                          <div className="text-lg font-bold text-green-800">
                             {item.percentile ? `${item.percentile}%ile` : "N/A"}
                           </div>
-                          <div className="text-xs text-green-600 font-mono">
+                          <div className="text-xs text-black font-mono">
                             {item.rankCutoff
                               ? `Rank ${item.rankCutoff.toLocaleString()}`
                               : "N/A"}
@@ -450,45 +462,45 @@ function Rank({
                       {/* Rounds Data */}
                       <div className="grid grid-cols-3 gap-2">
                         <div className="text-center p-2 bg-blue-50 rounded-lg">
-                          <div className="text-xs text-blue-600 font-medium mb-1">
+                          <div className="text-xs text-black font-medium mb-1">
                             Round 1
                           </div>
-                          <div className="text-sm font-semibold text-blue-700">
+                          <div className="text-sm font-semibold text-blue-800">
                             {item.round1.percentile
                               ? `${item.round1.percentile}%`
                               : "N/A"}
                           </div>
-                          <div className="text-xs text-gray-500 font-mono">
+                          <div className="text-xs text-black font-mono">
                             {item.round1.rank
                               ? item.round1.rank.toLocaleString()
                               : "N/A"}
                           </div>
                         </div>
                         <div className="text-center p-2 bg-blue-50 rounded-lg">
-                          <div className="text-xs text-blue-600 font-medium mb-1">
+                          <div className="text-xs text-black font-medium mb-1">
                             Round 2
                           </div>
-                          <div className="text-sm font-semibold text-blue-700">
+                          <div className="text-sm font-semibold text-blue-800">
                             {item.round2.percentile
                               ? `${item.round2.percentile}%`
                               : "N/A"}
                           </div>
-                          <div className="text-xs text-gray-500 font-mono">
+                          <div className="text-xs text-black font-mono">
                             {item.round2.rank
                               ? item.round2.rank.toLocaleString()
                               : "N/A"}
                           </div>
                         </div>
                         <div className="text-center p-2 bg-blue-50 rounded-lg">
-                          <div className="text-xs text-blue-600 font-medium mb-1">
+                          <div className="text-xs text-black font-medium mb-1">
                             Round 3
                           </div>
-                          <div className="text-sm font-semibold text-blue-700">
+                          <div className="text-sm font-semibold text-blue-800">
                             {item.round3.percentile
                               ? `${item.round3.percentile}%`
                               : "N/A"}
                           </div>
-                          <div className="text-xs text-gray-500 font-mono">
+                          <div className="text-xs text-black font-mono">
                             {item.round3.rank
                               ? item.round3.rank.toLocaleString()
                               : "N/A"}
